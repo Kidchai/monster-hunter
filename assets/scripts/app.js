@@ -10,6 +10,12 @@ let hasBonusLife = true;
 
 adjustHealthBars(chosenMaxLife);
 
+function reset() {
+    currentMonsterHealth = chosenMaxLife;
+    currentPlayerHealth = chosenMaxLife;
+    resetGame(chosenMaxLife);
+}
+
 function endRound() {
     const initialPlayerHealth = currentPlayerHealth;
     const playerDamage = dealPlayerDamage(MONSTER_ATTACK_VALUE);
@@ -21,8 +27,10 @@ function endRound() {
         currentPlayerHealth = initialPlayerHealth;
         setPlayerHealth(initialPlayerHealth);
         alert('It was close! Say thanks to your bonus life!')
-    } else if (currentPlayerHealth <= 0)
+    } else if (currentPlayerHealth <= 0) {
         alert('You lost!');
+        reset(chosenMaxLife);
+    }
 }
 
 function attackMonster(attackType) {
@@ -37,7 +45,7 @@ function attackMonster(attackType) {
     currentMonsterHealth -= monsterDamage;
     if (currentMonsterHealth <= 0) {
         alert('You won!');
-        return;
+        reset(chosenMaxLife);
     }
 
     endRound();
@@ -57,7 +65,6 @@ function healHandler() {
     if (currentPlayerHealth >= chosenMaxLife - HEAL_VALUE) {
         healValue = chosenMaxLife - currentPlayerHealth
         alert('Your health is full!');
-
     }
 
     increasePlayerHealth(HEAL_VALUE);
