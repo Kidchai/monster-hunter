@@ -12,15 +12,25 @@ const EVENT_MONSTER_ATTACK = 'MONSTER_ATTACK';
 const EVENT_PLAYER_HEAL = 'PLAYER_HEAL';
 const EVENT_GAME_OVER = 'GAME_OVER';
 
+function getMaxLifeValue() {
+    const enteredValue = prompt('Maximum life for you and for monster', '100');
+    const parsedValue = parseInt(enteredValue);
+    if (isNaN(parsedValue) || parsedValue <= 0)
+        throw { message: 'Invalid user input.' };
+    return parsedValue;
+}
 
-const enteredValue = prompt('Maximum life for you and for monster', '100');
+let chosenMaxLife;
 
-let chosenMaxLife = parseInt(enteredValue);
-let battleLog = [];
-
-if (isNaN(chosenMaxLife) || chosenMaxLife <= 0) 
+try {
+    chosenMaxLife = getMaxLifeValue();
+} catch (error) {
+    console.log(error);
     chosenMaxLife = 100;
+    alert('You entered incorrect value, default value of 100 was used.')
+}
 
+let battleLog = [];
 let currentMonsterHealth = chosenMaxLife;
 let currentPlayerHealth = chosenMaxLife;
 let hasBonusLife = true;
@@ -35,11 +45,15 @@ function writeToLog(event, value, monsterHealth, playerHealth) {
         finalPlayerHealth: playerHealth,
     };
 
-    if (event === EVENT_PLAYER_ATTACK || event === EVENT_PLAYER_STRONG_ATTACK)
-        logEntry.target = 'MONSTER';
-    else if (event === EVENT_MONSTER_ATTACK || event === EVENT_PLAYER_HEAL)
-        logEntry.target = 'PLAYER';
-
+    switch (event) {
+        case EVENT_PLAYER_ATTACK:
+        case EVENT_PLAYER_STRONG_ATTACK:
+            logEntry.target = 'MONSTER';
+            break;
+        case EVENT_MONSTER_ATTACK:
+        case EVENT_PLAYER_HEAL:
+            logEntry.target = 'PLAYER';
+    }
     battleLog.push(logEntry);
 }
 
@@ -54,11 +68,11 @@ function endRound() {
     const playerDamage = dealPlayerDamage(MONSTER_ATTACK_VALUE);
     currentPlayerHealth -= playerDamage;
     writeToLog(
-        EVENT_MONSTER_ATTACK, 
-        playerDamage, 
-        currentMonsterHealth, 
+        EVENT_MONSTER_ATTACK,
+        playerDamage,
+        currentMonsterHealth,
         currentPlayerHealth
-        );
+    );
 
     if (currentPlayerHealth <= 0 && hasBonusLife) {
         hasBonusLife = false;
@@ -70,41 +84,39 @@ function endRound() {
         alert('You lost!');
         reset(chosenMaxLife);
         writeToLog(
-            EVENT_GAME_OVER, 
-            'MONSTER WON', 
-            currentMonsterHealth, 
+            EVENT_GAME_OVER,
+            'MONSTER WON',
+            currentMonsterHealth,
             currentPlayerHealth
-            );
+        );
     }
 }
 
 function attackMonster(attackType) {
-    let maxDamange;
-    if (attackType === ATTACK_TYPE) {
-        maxDamange = ATTACK_VALUE;
-    } else if (attackType === STRONG_ATTACK_TYPE) {
-        maxDamange = STRONG_ATTACK_VALUE;
-    }
+    let maxDamange = attackType === ATTACK_TYPE ? ATTACK_VALUE : STRONG_ATTACK_VALUE;
+    let logevent =
+        attackType === ATTACK_TYPE
+            ? EVENT_PLAYER_ATTACK :
+            EVENT_PLAYER_STRONG_ATTACK;
 
     const monsterDamage = dealMonsterDamage(maxDamange);
     currentMonsterHealth -= monsterDamage;
     writeToLog(
-        EVENT_PLAYER_ATTACK, 
-        monsterDamage, 
-        currentMonsterHealth, 
+        logevent,
+        monsterDamage,
+        currentMonsterHealth,
         currentPlayerHealth
-        );
+    );
     if (currentMonsterHealth <= 0) {
         writeToLog(
-            EVENT_GAME_OVER, 
-            'PLAYER WON', 
-            currentMonsterHealth, 
+            EVENT_GAME_OVER,
+            'PLAYER WON',
+            currentMonsterHealth,
             currentPlayerHealth
-            );
+        );
         alert('You won!');
         reset(chosenMaxLife);
     }
-
     endRound();
 }
 
@@ -130,17 +142,19 @@ function healHandler() {
     currentPlayerHealth += healValue;
 
     writeToLog(
-        EVENT_PLAYER_HEAL, 
-        healValue, 
-        currentMonsterHealth, 
+        EVENT_PLAYER_HEAL,
+        healValue,
+        currentMonsterHealth,
         currentPlayerHealth
-        );
+    );
 
     endRound();
 }
 
 function printLogHandler() {
-    console.log(battleLog);
+    for (let i = 0; i < battleLog.length; i++) {
+        console.log(battleLog);
+    }
 }
 
 attackBtn.addEventListener('click', attackHandler);
